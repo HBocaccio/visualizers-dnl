@@ -1,0 +1,503 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Visualizadores de Dinámica No Lineal</title>
+<meta name="description" content="Colección de visualizadores interactivos para la enseñanza de dinámica no lineal: bifurcaciones, variedades invariantes, ciclos límite y caos.">
+<meta name="author" content="Hernán Bocaccio">
+<meta property="og:title" content="Visualizadores de Dinámica No Lineal">
+<meta property="og:description" content="Herramientas interactivas para explorar sistemas dinámicos no lineales.">
+<meta property="og:type" content="website">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Source+Serif+4:opsz,wght@8..60,500;8..60,600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+
+<style>
+  :root {
+    --bg: #f7f6f2;
+    --surface: #ffffff;
+    --ink: #1a1c21;
+    --muted: #5d6270;
+    --faint: #8a8f9b;
+    --line: #e3e1da;
+    --accent: #0f6e68;      /* teal: estable / curva principal */
+    --accent-2: #c2531b;    /* naranja: inestable / segunda variedad */
+    --plot-bg: #fbfaf7;
+    --plot-grid: #ecebe5;
+    --plot-flow: #b9bcc4;
+    --radius: 14px;
+    --shadow: 0 1px 2px rgba(20,20,30,.04), 0 4px 16px rgba(20,20,30,.05);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #101216; --surface: #171a20; --ink: #e8e9ec; --muted: #a2a7b3;
+      --faint: #767c89; --line: #2a2e36; --accent: #3fb8ad; --accent-2: #f08a4b;
+      --plot-bg: #13161b; --plot-grid: #20242b; --plot-flow: #454a55;
+      --shadow: 0 1px 2px rgba(0,0,0,.3), 0 6px 20px rgba(0,0,0,.25);
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #101216; --surface: #171a20; --ink: #e8e9ec; --muted: #a2a7b3;
+    --faint: #767c89; --line: #2a2e36; --accent: #3fb8ad; --accent-2: #f08a4b;
+    --plot-bg: #13161b; --plot-grid: #20242b; --plot-flow: #454a55;
+    --shadow: 0 1px 2px rgba(0,0,0,.3), 0 6px 20px rgba(0,0,0,.25);
+  }
+
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    margin: 0; background: var(--bg); color: var(--ink);
+    font: 16px/1.6 Inter, system-ui, -apple-system, "Segoe UI", sans-serif;
+  }
+  a { color: inherit; }
+  .wrap { max-width: 1140px; margin: 0 auto; padding: 0 20px; }
+
+  /* ---------- Encabezado ---------- */
+  header.top { border-bottom: 1px solid var(--line); }
+  .bar { display: flex; align-items: center; justify-content: space-between; height: 60px; gap: 12px; }
+  .brand { font-weight: 600; font-size: 15px; letter-spacing: .01em; text-decoration: none; display: flex; align-items: center; gap: 10px; }
+  .brand svg { flex: none; }
+  .bar nav { display: flex; align-items: center; gap: 18px; font-size: 14px; color: var(--muted); }
+  .bar nav a { text-decoration: none; }
+  .bar nav a:hover { color: var(--ink); }
+  .theme-btn {
+    border: 1px solid var(--line); background: var(--surface); color: var(--muted);
+    width: 34px; height: 34px; border-radius: 8px; cursor: pointer; display: grid; place-items: center;
+  }
+  .theme-btn:hover { color: var(--ink); }
+
+  .hero { padding: 64px 0 36px; }
+  .eyebrow { font-size: 13px; font-weight: 500; letter-spacing: .08em; text-transform: uppercase; color: var(--accent); margin: 0 0 14px; }
+  h1 {
+    font-family: "Source Serif 4", Georgia, serif; font-weight: 600;
+    font-size: clamp(2rem, 4.6vw, 3.2rem); line-height: 1.12; margin: 0 0 18px; letter-spacing: -.01em;
+    max-width: 18ch;
+  }
+  .lede { font-size: 1.08rem; color: var(--muted); max-width: 62ch; margin: 0; }
+  .lede .eq { color: var(--ink); white-space: nowrap; }
+
+  /* ---------- Filtros ---------- */
+  .toolbar { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; padding: 8px 0 22px; }
+  .chips { display: flex; flex-wrap: wrap; gap: 8px; }
+  .chip {
+    font: inherit; font-size: 13px; padding: 5px 12px; border-radius: 999px; cursor: pointer;
+    border: 1px solid var(--line); background: transparent; color: var(--muted);
+  }
+  .chip:hover { color: var(--ink); border-color: var(--faint); }
+  .chip[aria-pressed="true"] { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+  .count { font-size: 13px; color: var(--faint); }
+
+  /* ---------- Mosaico ---------- */
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 22px; padding-bottom: 72px; }
+  .card {
+    display: flex; flex-direction: column; text-decoration: none;
+    background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius);
+    overflow: hidden; box-shadow: var(--shadow);
+    transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease;
+  }
+  a.card:hover, a.card:focus-visible { transform: translateY(-3px); border-color: var(--accent); outline: none; }
+  a.card:hover .go { color: var(--accent); }
+  a.card:hover .go span { transform: translateX(3px); }
+  .thumb { position: relative; aspect-ratio: 16 / 10; background: var(--plot-bg); border-bottom: 1px solid var(--line); }
+  .thumb canvas, .thumb img { position: absolute; inset: 0; width: 100%; height: 100%; display: block; object-fit: cover; }
+  .badge {
+    position: absolute; top: 10px; left: 10px; font-size: 11px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase;
+    padding: 3px 8px; border-radius: 6px; background: var(--surface); color: var(--muted); border: 1px solid var(--line);
+  }
+  .body { padding: 18px 20px 20px; display: flex; flex-direction: column; gap: 10px; flex: 1; }
+  .tags { display: flex; flex-wrap: wrap; gap: 6px; }
+  .tag { font-size: 11.5px; color: var(--muted); border: 1px solid var(--line); border-radius: 5px; padding: 1px 7px; }
+  .card h2 { font-family: "Source Serif 4", Georgia, serif; font-weight: 600; font-size: 1.32rem; line-height: 1.25; margin: 2px 0 0; }
+  .eqbox { font-size: .92rem; color: var(--ink); overflow-x: auto; overflow-y: hidden; padding: 2px 0; min-height: 1.6em; }
+  .eqbox .katex-display { margin: 0; text-align: left; }
+  .eqbox .katex-display > .katex { text-align: left; }
+  .desc { font-size: .93rem; color: var(--muted); margin: 0; }
+  .go { margin-top: auto; padding-top: 6px; font-size: 14px; font-weight: 500; color: var(--ink); display: flex; align-items: center; gap: 6px; }
+  .go span { display: inline-block; transition: transform .18s ease; }
+  .card.soon { box-shadow: none; }
+  .card.soon .thumb { opacity: .55; }
+  .card.soon .go { color: var(--faint); }
+
+  /* ---------- Sobre / pie ---------- */
+  .about { border-top: 1px solid var(--line); padding: 48px 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 32px; }
+  .about h3 { font-family: "Source Serif 4", Georgia, serif; font-size: 1.15rem; font-weight: 600; margin: 0 0 8px; }
+  .about p, .about li { font-size: .94rem; color: var(--muted); margin: 0 0 8px; }
+  .about ul { padding-left: 18px; margin: 0; }
+  footer { border-top: 1px solid var(--line); padding: 22px 0 36px; font-size: 13px; color: var(--faint); }
+  footer .wrap { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 10px; }
+
+  @media (max-width: 560px) {
+    .wrap { padding: 0 16px; }
+    .hero { padding: 40px 0 24px; }
+    .bar nav a.hide-sm { display: none; }
+    .grid { grid-template-columns: 1fr; }
+  }
+  @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="wrap bar">
+    <a class="brand" href="./">
+      <!-- ícono: punto silla con sus dos variedades -->
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+        <path d="M2 12h20" stroke="var(--accent-2)" stroke-width="2" stroke-linecap="round"/>
+        <path d="M5 2c3 5 3 15 0 20" stroke="var(--accent)" stroke-width="2" stroke-linecap="round" transform="translate(7 0)"/>
+        <circle cx="12" cy="12" r="2.6" fill="var(--bg)" stroke="currentColor" stroke-width="1.6"/>
+      </svg>
+      Dinámica No Lineal
+    </a>
+    <nav>
+      <a href="#visualizadores" class="hide-sm">Visualizadores</a>
+      <a href="#sobre" class="hide-sm">Sobre el proyecto</a>
+      <a href="https://github.com/hbocaccio" rel="noopener">GitHub</a>
+      <button class="theme-btn" id="themeBtn" type="button" aria-label="Cambiar tema claro/oscuro" title="Cambiar tema">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
+      </button>
+    </nav>
+  </div>
+</header>
+
+<main>
+  <section class="wrap hero">
+    <p class="eyebrow">Material interactivo para la enseñanza</p>
+    <h1>Visualizadores de Dinámica No Lineal</h1>
+    <p class="lede">
+      Una colección de herramientas para explorar, con los parámetros en la mano, los conceptos centrales
+      de los sistemas dinámicos <span class="eq">ẋ = f(x; μ)</span>: puntos fijos y su estabilidad,
+      bifurcaciones, variedades invariantes, ciclos límite y caos. Cada visualizador acompaña un tema del curso
+      y puede usarse en clase o de forma autónoma.
+    </p>
+  </section>
+
+  <section class="wrap" id="visualizadores" aria-label="Visualizadores">
+    <div class="toolbar">
+      <div class="chips" id="chips" role="group" aria-label="Filtrar por tema"></div>
+      <div class="count" id="count" aria-live="polite"></div>
+    </div>
+    <div class="grid" id="grid"></div>
+  </section>
+
+  <section class="wrap about" id="sobre">
+    <div>
+      <h3>Sobre el proyecto</h3>
+      <p>
+        Estos visualizadores se desarrollan como apoyo a los trabajos prácticos de la materia Dinámica No Lineal.
+        La idea es que cada herramienta muestre simultáneamente varias representaciones del mismo fenómeno
+        (espacio de fases, diagrama de bifurcación, series temporales) para que la conexión entre ellas sea visible.
+      </p>
+    </div>
+    <div>
+      <h3>Cómo usarlos</h3>
+      <ul>
+        <li>Mové los parámetros de a poco y anticipá qué va a pasar antes de ver el resultado.</li>
+        <li>Buscá los valores críticos: ahí cambia la estructura cualitativa del flujo.</li>
+        <li>Contrastá siempre con el análisis analítico (linealización, formas normales).</li>
+      </ul>
+    </div>
+    <div>
+      <h3>Referencias</h3>
+      <ul>
+        <li>S. H. Strogatz, <em>Nonlinear Dynamics and Chaos</em>, 2.ª ed., CRC Press, 2015.</li>
+        <li>J. Guckenheimer &amp; P. Holmes, <em>Nonlinear Oscillations, Dynamical Systems, and Bifurcations of Vector Fields</em>, Springer, 1983.</li>
+        <li>Y. A. Kuznetsov, <em>Elements of Applied Bifurcation Theory</em>, 3.ª ed., Springer, 2004.</li>
+      </ul>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <span>© <span id="year"></span> Hernán Bocaccio · Departamento de Física</span>
+    <span>Código abierto en <a href="https://github.com/hbocaccio">github.com/hbocaccio</a></span>
+  </div>
+</footer>
+
+<script>
+/* =====================================================================
+   CATÁLOGO DE VISUALIZADORES
+   Para agregar uno nuevo, sumá un objeto a esta lista. Campos:
+     title   : nombre del tema
+     url     : dirección del visualizador (o null si está en preparación)
+     tex     : ecuación en LaTeX (se renderiza con KaTeX)
+     desc    : descripción breve (1–2 oraciones)
+     tags    : lista de etiquetas para los filtros
+     image   : (opcional) ruta a una captura, ej. "img/lorenz.png"
+     draw    : (opcional) nombre de una miniatura generada por código (ver THUMBS)
+   Si hay `image`, se usa la imagen; si no, se dibuja `draw`.
+   ===================================================================== */
+const VISUALIZADORES = [
+  {
+    title: "Switch bioquímico",
+    url: "https://hbocaccio.github.io/biochemical-switch-problem/",
+    tex: String.raw`\dot{x} = s - r\,x + \dfrac{x^2}{1+x^2}`,
+    desc: "Biestabilidad e histéresis en un sistema 1D. Método gráfico, bifurcaciones silla-nodo y la cúspide en el plano (r, s).",
+    tags: ["1D", "Bifurcaciones"],
+    draw: "switch"
+  },
+  {
+    title: "Variedades invariantes",
+    url: "https://hbocaccio.github.io/invariant-manifolds/",
+    tex: String.raw`\dot{x} = x + y^2,\quad \dot{y} = -y`,
+    desc: "Variedades estable e inestable de un punto silla: aproximación lineal local frente a la variedad global integrada numéricamente.",
+    tags: ["2D", "Espacio de fases"],
+    draw: "saddle"
+  },
+  /* ---- Ejemplos de próximos visualizadores (url: null → tarjeta "En preparación").
+          Borralos o completalos cuando estén listos. ---- */
+  {
+    title: "Bifurcación de Hopf",
+    url: null,
+    tex: String.raw`\dot{r} = \mu r - r^3,\quad \dot{\theta} = \omega`,
+    desc: "Nacimiento de un ciclo límite estable cuando un foco pierde estabilidad al cruzar μ = 0.",
+    tags: ["2D", "Bifurcaciones", "Ciclos límite"],
+    draw: "hopf"
+  },
+  {
+    title: "Mapa logístico",
+    url: null,
+    tex: String.raw`x_{n+1} = r\,x_n\,(1 - x_n)`,
+    desc: "Cascada de duplicaciones de período y ruta al caos; ventanas periódicas y constante de Feigenbaum.",
+    tags: ["Mapas", "Caos", "Bifurcaciones"],
+    draw: "logistic"
+  },
+  {
+    title: "Atractor de Lorenz",
+    url: null,
+    tex: String.raw`\begin{aligned}\dot{x} &= \sigma(y-x) \\ \dot{y} &= x(\rho - z) - y \\ \dot{z} &= xy - \beta z\end{aligned}`,
+    desc: "Atractor extraño con σ = 10, ρ = 28, β = 8/3: sensibilidad a condiciones iniciales y exponentes de Lyapunov.",
+    tags: ["3D", "Caos"],
+    draw: "lorenz"
+  }
+];
+
+/* =====================================================================
+   MINIATURAS GENERADAS POR CÓDIGO
+   Cada una dibuja el sistema real (no es una ilustración decorativa).
+   Firma: (ctx, w, h, c) con c = colores del tema actual.
+   ===================================================================== */
+function mapper(w, h, xmin, xmax, ymin, ymax, pad = 18) {
+  const sx = (w - 2 * pad) / (xmax - xmin), sy = (h - 2 * pad) / (ymax - ymin);
+  return { X: x => pad + (x - xmin) * sx, Y: y => h - pad - (y - ymin) * sy };
+}
+function axes(ctx, m, xmin, xmax, ymin, ymax, c) {
+  ctx.strokeStyle = c.grid; ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.moveTo(m.X(xmin), m.Y(0)); ctx.lineTo(m.X(xmax), m.Y(0));
+  ctx.moveTo(m.X(0), m.Y(ymin)); ctx.lineTo(m.X(0), m.Y(ymax));
+  ctx.stroke();
+}
+function dot(ctx, x, y, r, fill, stroke, lw = 1.8) {
+  ctx.beginPath(); ctx.arc(x, y, r, 0, 2 * Math.PI);
+  ctx.fillStyle = fill; ctx.fill();
+  ctx.strokeStyle = stroke; ctx.lineWidth = lw; ctx.stroke();
+}
+function rk4(f, s, dt) {
+  const k1 = f(s), a = s.map((v, i) => v + dt / 2 * k1[i]);
+  const k2 = f(a), b = s.map((v, i) => v + dt / 2 * k2[i]);
+  const k3 = f(b), d = s.map((v, i) => v + dt * k3[i]);
+  const k4 = f(d);
+  return s.map((v, i) => v + dt / 6 * (k1[i] + 2 * k2[i] + 2 * k3[i] + k4[i]));
+}
+
+const THUMBS = {
+  /* Método gráfico: x²/(1+x²) vs. r x − s; puntos fijos con estabilidad real */
+  switch(ctx, w, h, c) {
+    const r = 0.42, s = 0.03, xmin = -0.1, xmax = 2.9, ymin = -0.08, ymax = 1.05;
+    const m = mapper(w, h, xmin, xmax, ymin, ymax);
+    axes(ctx, m, xmin, xmax, ymin, ymax, c);
+    const f = x => x * x / (1 + x * x), g = x => r * x - s;
+    ctx.lineWidth = 2.4; ctx.strokeStyle = c.accent; ctx.beginPath();
+    for (let i = 0; i <= 300; i++) { const x = i / 300 * xmax; i ? ctx.lineTo(m.X(x), m.Y(f(x))) : ctx.moveTo(m.X(x), m.Y(f(x))); }
+    ctx.stroke();
+    ctx.strokeStyle = c.accent2; ctx.lineWidth = 2; ctx.beginPath();
+    const x1 = Math.min(xmax, (ymax + s) / r);
+    ctx.moveTo(m.X(0), m.Y(g(0))); ctx.lineTo(m.X(x1), m.Y(g(x1))); ctx.stroke();
+    // raíces de F(x) = s − r x + f(x) por cambio de signo + bisección
+    const F = x => s - r * x + f(x), roots = [];
+    for (let i = 0; i < 2000; i++) {
+      let a = i / 2000 * xmax, b = (i + 1) / 2000 * xmax;
+      if (F(a) * F(b) < 0) { for (let k = 0; k < 40; k++) { const mid = (a + b) / 2; F(a) * F(mid) <= 0 ? b = mid : a = mid; } roots.push((a + b) / 2); }
+    }
+    roots.forEach(x => {
+      const stable = (2 * x / (1 + x * x) ** 2) < r;       // F'(x*) < 0
+      dot(ctx, m.X(x), m.Y(f(x)), 5, stable ? c.ink : c.bg, c.ink);
+    });
+  },
+
+  /* Punto silla de ẋ = x + y², ẏ = −y. Solución exacta: x = C eᵗ − y²/3,
+     por lo que W^s: x = −y²/3 y W^u: y = 0. */
+  saddle(ctx, w, h, c) {
+    const L = 2, ar = w / h, xmin = -L * ar * .8, xmax = L * ar * .8, ymin = -L * .8, ymax = L * .8;
+    const m = mapper(w, h, xmin, xmax, ymin, ymax, 0);
+    const vf = ([x, y]) => [x + y * y, -y];
+    ctx.strokeStyle = c.flow; ctx.lineWidth = 1.1;
+    const n = 9;
+    for (let i = 0; i <= n; i++) for (const y0 of [ymin, ymax]) {
+      let p = [xmin + (xmax - xmin) * i / n, y0];
+      ctx.beginPath(); ctx.moveTo(m.X(p[0]), m.Y(p[1]));
+      for (let k = 0; k < 400; k++) { p = rk4(vf, p, 0.01); if (Math.abs(p[0]) > 3 * L) break; ctx.lineTo(m.X(p[0]), m.Y(p[1])); }
+      ctx.stroke();
+    }
+    for (const C of [-0.8, -0.35, -0.12, 0.12, 0.35]) for (const y0 of [ymin * 1.05, ymax * 1.05]) {
+      // trayectorias exactas x = C eᵗ − y²/3 con y = y0 e^{−t}
+      ctx.beginPath();
+      for (let k = 0; k <= 200; k++) {
+        const t = k * 0.03, y = y0 * Math.exp(-t), x = C * Math.exp(t) - y * y / 3;
+        if (Math.abs(x) > 3 * L) break;
+        k ? ctx.lineTo(m.X(x), m.Y(y)) : ctx.moveTo(m.X(x), m.Y(y));
+      }
+      ctx.stroke();
+    }
+    ctx.lineWidth = 2.6;
+    ctx.strokeStyle = c.accent; ctx.beginPath();                     // variedad estable
+    for (let i = 0; i <= 200; i++) { const y = ymin + (ymax - ymin) * i / 200; const x = -y * y / 3; i ? ctx.lineTo(m.X(x), m.Y(y)) : ctx.moveTo(m.X(x), m.Y(y)); }
+    ctx.stroke();
+    ctx.strokeStyle = c.accent2; ctx.beginPath();                    // variedad inestable
+    ctx.moveTo(m.X(xmin), m.Y(0)); ctx.lineTo(m.X(xmax), m.Y(0)); ctx.stroke();
+    dot(ctx, m.X(0), m.Y(0), 5, c.bg, c.ink);
+  },
+
+  /* Forma normal de Hopf supercrítica (μ = 1): espirales hacia el ciclo r = √μ */
+  hopf(ctx, w, h, c) {
+    const ar = w / h, R = 1.9, m = mapper(w, h, -R * ar, R * ar, -R, R, 0);
+    const mu = 1, om = 2.2;
+    const vf = ([x, y]) => { const r2 = x * x + y * y; return [mu * x - om * y - r2 * x, om * x + mu * y - r2 * y]; };
+    ctx.strokeStyle = c.flow; ctx.lineWidth = 1.2;
+    for (const [x0, y0] of [[0.04, 0], [1.75 * ar * .9, 0.2], [-1.6, -1.5]]) {
+      let p = [x0, y0]; ctx.beginPath(); ctx.moveTo(m.X(p[0]), m.Y(p[1]));
+      for (let k = 0; k < 900; k++) { p = rk4(vf, p, 0.006); ctx.lineTo(m.X(p[0]), m.Y(p[1])); }
+      ctx.stroke();
+    }
+    ctx.strokeStyle = c.accent; ctx.lineWidth = 2.6; ctx.beginPath();
+    ctx.arc(m.X(0), m.Y(0), m.X(Math.sqrt(mu)) - m.X(0), 0, 2 * Math.PI); ctx.stroke();
+    dot(ctx, m.X(0), m.Y(0), 4.5, c.bg, c.ink);
+  },
+
+  /* Diagrama de bifurcación del mapa logístico, r ∈ [2.8, 4] */
+  logistic(ctx, w, h, c) {
+    const r0 = 2.8, r1 = 4, m = mapper(w, h, r0, r1, 0, 1, 12);
+    ctx.fillStyle = c.accent; ctx.globalAlpha = 0.35;
+    const cols = Math.floor(w * 1.2);
+    for (let i = 0; i < cols; i++) {
+      const r = r0 + (r1 - r0) * i / cols; let x = 0.5;
+      for (let k = 0; k < 300; k++) x = r * x * (1 - x);
+      for (let k = 0; k < 120; k++) { x = r * x * (1 - x); ctx.fillRect(m.X(r), m.Y(x), 1, 1); }
+    }
+    ctx.globalAlpha = 1;
+  },
+
+  /* Lorenz (σ=10, ρ=28, β=8/3), proyección x–z, RK4 */
+  lorenz(ctx, w, h, c) {
+    const sg = 10, rho = 28, be = 8 / 3;
+    const vf = ([x, y, z]) => [sg * (y - x), x * (rho - z) - y, x * y - be * z];
+    const ar = w / h, m = mapper(w, h, -25 * ar * .62, 25 * ar * .62, 2, 50, 10);
+    let p = [1, 1, 1];
+    for (let k = 0; k < 1000; k++) p = rk4(vf, p, 0.005);
+    ctx.strokeStyle = c.accent; ctx.lineWidth = 0.8; ctx.globalAlpha = 0.8; ctx.beginPath();
+    ctx.moveTo(m.X(p[0]), m.Y(p[2]));
+    for (let k = 0; k < 9000; k++) { p = rk4(vf, p, 0.005); ctx.lineTo(m.X(p[0]), m.Y(p[2])); }
+    ctx.stroke(); ctx.globalAlpha = 1;
+  }
+};
+
+/* =====================================================================
+   Render de la página
+   ===================================================================== */
+const grid = document.getElementById("grid");
+const chipsEl = document.getElementById("chips");
+const countEl = document.getElementById("count");
+let activeTag = "Todos";
+
+function themeColors() {
+  const cs = getComputedStyle(document.documentElement), v = n => cs.getPropertyValue(n).trim();
+  return { bg: v("--plot-bg"), ink: v("--ink"), grid: v("--plot-grid"), flow: v("--plot-flow"), accent: v("--accent"), accent2: v("--accent-2") };
+}
+
+function drawThumb(canvas) {
+  const fn = THUMBS[canvas.dataset.draw]; if (!fn) return;
+  const rect = canvas.getBoundingClientRect(); if (!rect.width) return;
+  const dpr = Math.min(window.devicePixelRatio || 1, 2);
+  canvas.width = Math.round(rect.width * dpr); canvas.height = Math.round(rect.height * dpr);
+  const ctx = canvas.getContext("2d");
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  const c = themeColors();
+  ctx.fillStyle = c.bg; ctx.fillRect(0, 0, rect.width, rect.height);
+  ctx.lineJoin = "round"; ctx.lineCap = "round";
+  fn(ctx, rect.width, rect.height, c);
+}
+function drawAll() { document.querySelectorAll("canvas[data-draw]").forEach(drawThumb); }
+
+function renderTeX() {
+  if (!window.katex) return;
+  document.querySelectorAll(".eqbox[data-tex]").forEach(el => {
+    try { katex.render(el.dataset.tex, el, { throwOnError: false, displayMode: true }); } catch (e) {}
+  });
+}
+
+function cardHTML(v) {
+  const live = !!v.url;
+  const tag = live ? "a" : "div";
+  const attrs = live ? `href="${v.url}"` : `aria-disabled="true"`;
+  const media = v.image
+    ? `<img src="${v.image}" alt="Vista del visualizador ${v.title}" loading="lazy">`
+    : `<canvas data-draw="${v.draw || ""}" role="img" aria-label="Miniatura: ${v.title}"></canvas>`;
+  return `
+    <${tag} class="card${live ? "" : " soon"}" ${attrs}>
+      <div class="thumb">${media}${live ? "" : `<span class="badge">En preparación</span>`}</div>
+      <div class="body">
+        <div class="tags">${v.tags.map(t => `<span class="tag">${t}</span>`).join("")}</div>
+        <h2>${v.title}</h2>
+        <div class="eqbox" data-tex="${v.tex.replace(/"/g, "&quot;")}"></div>
+        <p class="desc">${v.desc}</p>
+        <div class="go">${live ? `Abrir visualizador <span>→</span>` : "Próximamente"}</div>
+      </div>
+    </${tag}>`;
+}
+
+function render() {
+  const list = VISUALIZADORES.filter(v => activeTag === "Todos" || v.tags.includes(activeTag));
+  grid.innerHTML = list.map(cardHTML).join("");
+  const n = list.filter(v => v.url).length;
+  countEl.textContent = `${n} disponible${n === 1 ? "" : "s"} · ${list.length - n} en preparación`;
+  renderTeX();
+  requestAnimationFrame(drawAll);
+}
+
+function renderChips() {
+  const tags = ["Todos", ...new Set(VISUALIZADORES.flatMap(v => v.tags))];
+  chipsEl.innerHTML = tags.map(t => `<button class="chip" type="button" aria-pressed="${t === activeTag}">${t}</button>`).join("");
+  chipsEl.querySelectorAll(".chip").forEach(b => b.onclick = () => { activeTag = b.textContent; renderChips(); render(); });
+}
+
+/* Tema claro/oscuro */
+const themeBtn = document.getElementById("themeBtn");
+try { const saved = localStorage.getItem("dnl-theme"); if (saved) document.documentElement.dataset.theme = saved; } catch (e) {}
+themeBtn.onclick = () => {
+  const dark = document.documentElement.dataset.theme
+    ? document.documentElement.dataset.theme === "dark"
+    : matchMedia("(prefers-color-scheme: dark)").matches;
+  const next = dark ? "light" : "dark";
+  document.documentElement.dataset.theme = next;
+  try { localStorage.setItem("dnl-theme", next); } catch (e) {}
+  drawAll();
+};
+matchMedia("(prefers-color-scheme: dark)").addEventListener("change", drawAll);
+
+let rt; window.addEventListener("resize", () => { clearTimeout(rt); rt = setTimeout(drawAll, 120); });
+window.addEventListener("load", () => {        // KaTeX se carga con defer
+  if (window.katex) renderTeX();
+  else document.querySelectorAll(".eqbox[data-tex]").forEach(el => { el.textContent = el.dataset.tex; el.style.fontFamily = "monospace"; });
+});
+document.getElementById("year").textContent = new Date().getFullYear();
+
+renderChips();
+render();
+</script>
+</body>
+</html>
