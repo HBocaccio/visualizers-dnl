@@ -5,7 +5,6 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Visualizadores de Dinámica No Lineal</title>
 <meta name="description" content="Colección de visualizadores interactivos para la enseñanza de dinámica no lineal: bifurcaciones, variedades invariantes, ciclos límite y caos.">
-<meta name="author" content="Hernán Bocaccio">
 <meta property="og:title" content="Visualizadores de Dinámica No Lineal">
 <meta property="og:description" content="Herramientas interactivas para explorar sistemas dinámicos no lineales.">
 <meta property="og:type" content="website">
@@ -150,12 +149,11 @@
         <path d="M5 2c3 5 3 15 0 20" stroke="var(--accent)" stroke-width="2" stroke-linecap="round" transform="translate(7 0)"/>
         <circle cx="12" cy="12" r="2.6" fill="var(--bg)" stroke="currentColor" stroke-width="1.6"/>
       </svg>
-      Dinámica No Lineal
+      Dinámica No Lineal · Cátedra Mindlin
     </a>
     <nav>
       <a href="#visualizadores" class="hide-sm">Visualizadores</a>
       <a href="#sobre" class="hide-sm">Sobre el proyecto</a>
-      <a href="https://github.com/hbocaccio" rel="noopener">GitHub</a>
       <button class="theme-btn" id="themeBtn" type="button" aria-label="Cambiar tema claro/oscuro" title="Cambiar tema">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
       </button>
@@ -197,15 +195,14 @@
       <ul>
         <li>Mové los parámetros de a poco y anticipá qué va a pasar antes de ver el resultado.</li>
         <li>Buscá los valores críticos: ahí cambia la estructura cualitativa del flujo.</li>
-        <li>Contrastá siempre con el análisis analítico (linealización, formas normales).</li>
+        <li>Contrastá siempre con el análisis analítico (linealización, nulclinas, método gráfico).</li>
       </ul>
     </div>
     <div>
       <h3>Referencias</h3>
       <ul>
-        <li>S. H. Strogatz, <em>Nonlinear Dynamics and Chaos</em>, 2.ª ed., CRC Press, 2015.</li>
-        <li>J. Guckenheimer &amp; P. Holmes, <em>Nonlinear Oscillations, Dynamical Systems, and Bifurcations of Vector Fields</em>, Springer, 1983.</li>
-        <li>Y. A. Kuznetsov, <em>Elements of Applied Bifurcation Theory</em>, 3.ª ed., Springer, 2004.</li>
+        <li>“Dinámica no lineal”, Mindlin G. B., Editorial Universidad Nacional de Quilmes (2018).</li>
+        <li>“Nonlinear Dynamics and Chaos”, Strogatz S., Addison-Wesley (1994).</li>
       </ul>
     </div>
   </section>
@@ -213,8 +210,7 @@
 
 <footer>
   <div class="wrap">
-    <span>© <span id="year"></span> Hernán Bocaccio · Departamento de Física</span>
-    <span>Código abierto en <a href="https://github.com/hbocaccio">github.com/hbocaccio</a></span>
+    <span>© <span id="year"></span> · Departamento de Física</span>
   </div>
 </footer>
 
@@ -243,37 +239,36 @@ const VISUALIZADORES = [
   {
     title: "Variedades invariantes",
     url: "https://hbocaccio.github.io/invariant-manifolds/",
-    tex: String.raw`\dot{x} = x + y^2,\quad \dot{y} = -y`,
-    desc: "Variedades estable e inestable de un punto silla: aproximación lineal local frente a la variedad global integrada numéricamente.",
+    tex: String.raw`\dot{x} = x + e^{-y},\quad \dot{y} = -y`,
+    desc: "Variedades estable e inestable de un punto silla: aproximación lineal y polinomial local frente a la variedad global integrada numéricamente.",
     tags: ["2D", "Espacio de fases"],
     draw: "saddle"
   },
-  /* ---- Ejemplos de próximos visualizadores (url: null → tarjeta "En preparación").
-          Borralos o completalos cuando estén listos. ---- */
   {
     title: "Bifurcación de Hopf",
-    url: null,
-    tex: String.raw`\dot{r} = \mu r - r^3,\quad \dot{\theta} = \omega`,
-    desc: "Nacimiento de un ciclo límite estable cuando un foco pierde estabilidad al cruzar μ = 0.",
+    url: "https://hbocaccio.github.io/hopf-bifurcation/",
+    tex: String.raw`\dot{x} = \mu x + y + f(x,y),\quad \dot{y} = -x + \mu y + g(x,y)`,
+    desc: "Un foco que pierde estabilidad al cruzar μ = 0. Autovalores, retrato de fases y diagrama de bifurcación por simulación para decidir si el ciclo límite nace supercrítico o subcrítico.",
     tags: ["2D", "Bifurcaciones", "Ciclos límite"],
     draw: "hopf"
   },
   {
-    title: "Mapa logístico",
-    url: null,
-    tex: String.raw`x_{n+1} = r\,x_n\,(1 - x_n)`,
-    desc: "Cascada de duplicaciones de período y ruta al caos; ventanas periódicas y constante de Feigenbaum.",
-    tags: ["Mapas", "Caos", "Bifurcaciones"],
-    draw: "logistic"
+    title: "Lotka-Volterra y poblaciones",
+    url: "https://hbocaccio.github.io/lotka-volterra/",
+    tex: String.raw`\dot{x} = \alpha x - \beta x y,\quad \dot{y} = \delta x y - \gamma y`,
+    desc: "Del modelo predador-presa clásico a la competencia entre especies y la respuesta de Holling: cuencas de atracción, transcríticas y nacimiento de ciclos límite.",
+    tags: ["2D", "Bifurcaciones", "Ciclos límite", "Poblaciones"],
+    draw: "lv"
   },
   {
-    title: "Atractor de Lorenz",
-    url: null,
-    tex: String.raw`\begin{aligned}\dot{x} &= \sigma(y-x) \\ \dot{y} &= x(\rho - z) - y \\ \dot{z} &= xy - \beta z\end{aligned}`,
-    desc: "Atractor extraño con σ = 10, ρ = 28, β = 8/3: sensibilidad a condiciones iniciales y exponentes de Lyapunov.",
-    tags: ["3D", "Caos"],
-    draw: "lorenz"
+    title: "Mapas unidimensionales",
+    url: "https://hbocaccio.github.io/discrete-maps/",
+    tex: String.raw`x_{n+1} = \lambda x_n,\qquad x_{n+1} = x_n^2 + c`,
+    desc: "Órbitas y cobweb en el mapa lineal y en el cuadrático: estabilidad de puntos fijos, silla-nodo, duplicación de período y órbita de período 2.",
+    tags: ["1D", "Mapas", "Bifurcaciones"],
+    draw: "cobweb"
   }
+  /* Para sumar un visualizador nuevo: agregar su objeto acá recién cuando esté publicado en su repo. */
 ];
 
 /* =====================================================================
@@ -330,79 +325,91 @@ const THUMBS = {
     });
   },
 
-  /* Punto silla de ẋ = x + y², ẏ = −y. Solución exacta: x = C eᵗ − y²/3,
-     por lo que W^s: x = −y²/3 y W^u: y = 0. */
+  /* Punto silla de ẋ = x + e^(−y), ẏ = −y en (−1, 0). W^u: y = 0.
+     W^s: integración hacia atrás desde el autovector estable (1, 2). */
   saddle(ctx, w, h, c) {
-    const L = 2, ar = w / h, xmin = -L * ar * .8, xmax = L * ar * .8, ymin = -L * .8, ymax = L * .8;
+    const ar = w / h, H = 1.7, xc = -1, xmin = xc - H * ar, xmax = xc + H * ar, ymin = -H, ymax = H;
     const m = mapper(w, h, xmin, xmax, ymin, ymax, 0);
-    const vf = ([x, y]) => [x + y * y, -y];
+    const vf = ([x, y]) => [x + Math.exp(-y), -y];
+    const back = ([x, y]) => [-(x + Math.exp(-y)), y];
+    const out = p => p[0] < xmin - 1 || p[0] > xmax + 1 || Math.abs(p[1]) > ymax + 1;
     ctx.strokeStyle = c.flow; ctx.lineWidth = 1.1;
     const n = 9;
-    for (let i = 0; i <= n; i++) for (const y0 of [ymin, ymax]) {
+    for (let i = 0; i <= n; i++) for (const y0 of [ymin * 1.02, ymax * 1.02]) {
       let p = [xmin + (xmax - xmin) * i / n, y0];
       ctx.beginPath(); ctx.moveTo(m.X(p[0]), m.Y(p[1]));
-      for (let k = 0; k < 400; k++) { p = rk4(vf, p, 0.01); if (Math.abs(p[0]) > 3 * L) break; ctx.lineTo(m.X(p[0]), m.Y(p[1])); }
-      ctx.stroke();
-    }
-    for (const C of [-0.8, -0.35, -0.12, 0.12, 0.35]) for (const y0 of [ymin * 1.05, ymax * 1.05]) {
-      // trayectorias exactas x = C eᵗ − y²/3 con y = y0 e^{−t}
-      ctx.beginPath();
-      for (let k = 0; k <= 200; k++) {
-        const t = k * 0.03, y = y0 * Math.exp(-t), x = C * Math.exp(t) - y * y / 3;
-        if (Math.abs(x) > 3 * L) break;
-        k ? ctx.lineTo(m.X(x), m.Y(y)) : ctx.moveTo(m.X(x), m.Y(y));
-      }
+      for (let k = 0; k < 600; k++) { p = rk4(vf, p, 0.01); if (out(p)) break; ctx.lineTo(m.X(p[0]), m.Y(p[1])); }
       ctx.stroke();
     }
     ctx.lineWidth = 2.6;
-    ctx.strokeStyle = c.accent; ctx.beginPath();                     // variedad estable
-    for (let i = 0; i <= 200; i++) { const y = ymin + (ymax - ymin) * i / 200; const x = -y * y / 3; i ? ctx.lineTo(m.X(x), m.Y(y)) : ctx.moveTo(m.X(x), m.Y(y)); }
-    ctx.stroke();
-    ctx.strokeStyle = c.accent2; ctx.beginPath();                    // variedad inestable
-    ctx.moveTo(m.X(xmin), m.Y(0)); ctx.lineTo(m.X(xmax), m.Y(0)); ctx.stroke();
-    dot(ctx, m.X(0), m.Y(0), 5, c.bg, c.ink);
-  },
-
-  /* Forma normal de Hopf supercrítica (μ = 1): espirales hacia el ciclo r = √μ */
-  hopf(ctx, w, h, c) {
-    const ar = w / h, R = 1.9, m = mapper(w, h, -R * ar, R * ar, -R, R, 0);
-    const mu = 1, om = 2.2;
-    const vf = ([x, y]) => { const r2 = x * x + y * y; return [mu * x - om * y - r2 * x, om * x + mu * y - r2 * y]; };
-    ctx.strokeStyle = c.flow; ctx.lineWidth = 1.2;
-    for (const [x0, y0] of [[0.04, 0], [1.75 * ar * .9, 0.2], [-1.6, -1.5]]) {
-      let p = [x0, y0]; ctx.beginPath(); ctx.moveTo(m.X(p[0]), m.Y(p[1]));
-      for (let k = 0; k < 900; k++) { p = rk4(vf, p, 0.006); ctx.lineTo(m.X(p[0]), m.Y(p[1])); }
+    ctx.strokeStyle = c.accent;                                        // variedad estable
+    for (const sgn of [1, -1]) {
+      const e = 1e-4 * sgn / Math.sqrt(5);
+      let p = [xc + e, 2 * e];
+      ctx.beginPath(); ctx.moveTo(m.X(p[0]), m.Y(p[1]));
+      for (let k = 0; k < 3000; k++) { p = rk4(back, p, 0.005); if (out(p)) break; ctx.lineTo(m.X(p[0]), m.Y(p[1])); }
       ctx.stroke();
     }
-    ctx.strokeStyle = c.accent; ctx.lineWidth = 2.6; ctx.beginPath();
-    ctx.arc(m.X(0), m.Y(0), m.X(Math.sqrt(mu)) - m.X(0), 0, 2 * Math.PI); ctx.stroke();
+    ctx.strokeStyle = c.accent2; ctx.beginPath();                    // variedad inestable
+    ctx.moveTo(m.X(xmin), m.Y(0)); ctx.lineTo(m.X(xmax), m.Y(0)); ctx.stroke();
+    dot(ctx, m.X(xc), m.Y(0), 5, c.bg, c.ink);
+  },
+
+  /* Ej. 6(a): ẋ = y + μx, ẏ = −x + μy − x²y con μ = 0.12. El ciclo límite
+     se obtiene por simulación (transitorio largo y luego una vuelta). */
+  hopf(ctx, w, h, c) {
+    const ar = w / h, R = 1.75, m = mapper(w, h, -R * ar, R * ar, -R, R, 0);
+    const mu = 0.12;
+    const vf = ([x, y]) => [y + mu * x, -x + mu * y - x * x * y];
+    ctx.strokeStyle = c.flow; ctx.lineWidth = 1.2;
+    for (const p0 of [[0.05, 0], [1.65, 0.4], [-1.6, -0.6]]) {
+      let p = p0; ctx.beginPath(); ctx.moveTo(m.X(p[0]), m.Y(p[1]));
+      for (let k = 0; k < 6000; k++) { p = rk4(vf, p, 0.01); ctx.lineTo(m.X(p[0]), m.Y(p[1])); }
+      ctx.stroke();
+    }
+    let p = [1, 0];
+    for (let k = 0; k < 40000; k++) p = rk4(vf, p, 0.01);
+    ctx.strokeStyle = c.accent; ctx.lineWidth = 2.6; ctx.beginPath(); ctx.moveTo(m.X(p[0]), m.Y(p[1]));
+    for (let k = 0; k < 700; k++) { p = rk4(vf, p, 0.01); ctx.lineTo(m.X(p[0]), m.Y(p[1])); }
+    ctx.stroke();
     dot(ctx, m.X(0), m.Y(0), 4.5, c.bg, c.ink);
   },
 
-  /* Diagrama de bifurcación del mapa logístico, r ∈ [2.8, 4] */
-  logistic(ctx, w, h, c) {
-    const r0 = 2.8, r1 = 4, m = mapper(w, h, r0, r1, 0, 1, 12);
-    ctx.fillStyle = c.accent; ctx.globalAlpha = 0.35;
-    const cols = Math.floor(w * 1.2);
-    for (let i = 0; i < cols; i++) {
-      const r = r0 + (r1 - r0) * i / cols; let x = 0.5;
-      for (let k = 0; k < 300; k++) x = r * x * (1 - x);
-      for (let k = 0; k < 120; k++) { x = r * x * (1 - x); ctx.fillRect(m.X(r), m.Y(x), 1, 1); }
-    }
-    ctx.globalAlpha = 1;
+  /* Lotka-Volterra clásico (α = β = γ = δ = 1): órbitas cerradas alrededor del centro (1, 1) */
+  lv(ctx, w, h, c) {
+    const xmax = 3.4, ymax = 3.1, m = mapper(w, h, -0.12, xmax, -0.12, ymax, 12);
+    const vf = ([x, y]) => [x - x * y, x * y - y];
+    axes(ctx, m, -0.12, xmax, -0.12, ymax, c);
+    [0.22, 0.4, 0.58, 0.76].forEach((x0, i) => {
+      let p = [x0, 1];
+      ctx.strokeStyle = i === 1 ? c.accent : c.flow; ctx.lineWidth = i === 1 ? 2.6 : 1.3;
+      ctx.beginPath(); ctx.moveTo(m.X(p[0]), m.Y(p[1]));
+      for (let k = 0; k < 1600; k++) { p = rk4(vf, p, 0.01); ctx.lineTo(m.X(p[0]), m.Y(p[1])); }
+      ctx.stroke();
+    });
+    dot(ctx, m.X(1), m.Y(1), 4.5, c.bg, c.ink);
+    dot(ctx, m.X(0), m.Y(0), 4.5, c.bg, c.ink);
   },
 
-  /* Lorenz (σ=10, ρ=28, β=8/3), proyección x–z, RK4 */
-  lorenz(ctx, w, h, c) {
-    const sg = 10, rho = 28, be = 8 / 3;
-    const vf = ([x, y, z]) => [sg * (y - x), x * (rho - z) - y, x * y - be * z];
-    const ar = w / h, m = mapper(w, h, -25 * ar * .62, 25 * ar * .62, 2, 50, 10);
-    let p = [1, 1, 1];
-    for (let k = 0; k < 1000; k++) p = rk4(vf, p, 0.005);
-    ctx.strokeStyle = c.accent; ctx.lineWidth = 0.8; ctx.globalAlpha = 0.8; ctx.beginPath();
-    ctx.moveTo(m.X(p[0]), m.Y(p[2]));
-    for (let k = 0; k < 9000; k++) { p = rk4(vf, p, 0.005); ctx.lineTo(m.X(p[0]), m.Y(p[2])); }
-    ctx.stroke(); ctx.globalAlpha = 1;
+  /* Cobweb de x → x² + c con c = −1.1: la órbita converge a la órbita de período 2 estable
+     (λ₂ = 4(c+1) = −0.4); el punto fijo x₋ = (1 − √(1−4c))/2 es inestable */
+  cobweb(ctx, w, h, c) {
+    const cc = -1.1, ar = w / h, ymin = -1.35, ymax = 1.25, xh = (ymax - ymin) * ar / 2, xmin = -0.05 - xh, xmax = -0.05 + xh;
+    const m = mapper(w, h, xmin, xmax, ymin, ymax, 10);
+    const f = x => x * x + cc;
+    axes(ctx, m, xmin, xmax, ymin, ymax, c);
+    ctx.save(); ctx.beginPath(); ctx.rect(0, 0, w, h); ctx.clip();
+    ctx.strokeStyle = c.flow; ctx.lineWidth = 1.2; ctx.setLineDash([5, 4]); ctx.beginPath();
+    ctx.moveTo(m.X(ymin), m.Y(ymin)); ctx.lineTo(m.X(ymax), m.Y(ymax)); ctx.stroke(); ctx.setLineDash([]);
+    ctx.strokeStyle = c.ink; ctx.lineWidth = 2; ctx.beginPath();
+    for (let i = 0; i <= 200; i++) { const x = xmin + (xmax - xmin) * i / 200, y = f(x); i ? ctx.lineTo(m.X(x), m.Y(y)) : ctx.moveTo(m.X(x), m.Y(y)); }
+    ctx.stroke();
+    let x = 0.15; ctx.strokeStyle = c.accent; ctx.lineWidth = 1.6; ctx.beginPath(); ctx.moveTo(m.X(x), m.Y(0));
+    for (let k = 0; k < 40; k++) { const y = f(x); ctx.lineTo(m.X(x), m.Y(y)); ctx.lineTo(m.X(y), m.Y(y)); x = y; }
+    ctx.stroke(); ctx.restore();
+    const xm = (1 - Math.sqrt(1 - 4 * cc)) / 2;
+    ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(m.X(xm), m.Y(xm), 5, 0, 2 * Math.PI);
+    ctx.fillStyle = c.bg; ctx.fill(); ctx.strokeStyle = c.accent2; ctx.stroke();
   }
 };
 
@@ -464,7 +471,7 @@ function render() {
   const list = VISUALIZADORES.filter(v => activeTag === "Todos" || v.tags.includes(activeTag));
   grid.innerHTML = list.map(cardHTML).join("");
   const n = list.filter(v => v.url).length;
-  countEl.textContent = `${n} disponible${n === 1 ? "" : "s"} · ${list.length - n} en preparación`;
+  countEl.textContent = `${n} visualizador${n === 1 ? "" : "es"}`;
   renderTeX();
   requestAnimationFrame(drawAll);
 }
